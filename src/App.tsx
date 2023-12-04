@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./styles.css";
 import tw from "twin.macro";
 import styled from "@emotion/styled";
@@ -23,7 +23,13 @@ interface TodoItemProps {
 
 const TodoItem = styled.li<TodoItemProps>`
   ${tw`flex justify-between items-center`}
-  ${({ isChecked }) => isChecked && tw`line-through text-gray-500`}
+
+  > div {
+    ${tw`flex items-center`}
+    > span {
+      ${({ isChecked }) => isChecked && tw`line-through text-gray-500`}
+    }
+  }
 
   &:nth-child(odd) {
     ${tw`bg-gray-200 pr-2 pl-2`}
@@ -36,12 +42,19 @@ const TodoItem = styled.li<TodoItemProps>`
 
 function App() {
   const [newTodo, setNewTodo] = useState("");
-  const [actions, setActions] = useState<string[]>([]);
+  const [actions, setActions] = useState<string[]>(
+    JSON.parse(localStorage.getItem("todos") || "[]")
+  );
   const [editAction, setEditAction] = useState<number | null>(null);
   const [editValue, setEditValue] = useState<string>("");
   const [checkedItems, setCheckedItems] = useState<boolean[]>(
-    new Array(actions.length).fill(false)
+    JSON.parse(localStorage.getItem("checkedItems") || "[]")
   );
+
+  useEffect(() => {
+    localStorage.setItem("todos", JSON.stringify(actions));
+    localStorage.setItem("checkedItems", JSON.stringify(checkedItems));
+  }, [actions, checkedItems]);
 
   const handleAddTodo = () => {
     if (newTodo.trim() !== "") {
@@ -117,7 +130,9 @@ function App() {
                 </>
               ) : (
                 <>
-                  <div>{todo}</div>
+                  <div>
+                    <span>{todo}</span>
+                  </div>
                   <div className="flex items-center">
                     <GreenButton onClick={() => handleEdit(index)}>
                       Edit
